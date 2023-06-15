@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 
-models=("easy-khair-180-trans10-gpc0.8-trial1-025000.pkl"\
- "easy-khair-180-trans10-gpc0.7-trial2-025000.pkl"\
- "easy-khair-180-trans10-gpc0.8-trial2-025000.pkl"\
- "easy-khair-180-trans10-gpc0.7-trial1-025000.pkl"\
- "easy-khair-180-gpc0.8-trans10-025000.pkl"\
+models=("easy-khair-180-gpc0.8-trans10-025000.pkl"\
   "ablation-trigridD-1-025000.pkl")
 
 in="models"

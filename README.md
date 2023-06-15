@@ -89,9 +89,11 @@ The pickle contains three networks. `'G'` and `'D'` are instantaneous snapshots 
 
 
 ## Datasets
-Due to the license issue, we are not able to release FFHQ-F(ullhead) dataset that we used to train the model. [test_data_img](./dataset/testdata_img/) and [test_data_seg](./dataset/testdata_seg/) are just a tiny example for showing the dataset struture. For the camera pose convention, please refer to [EG3D](https://github.com/NVlabs/eg3d). 
 
-FFHQ-F consists of [Flickr-Faces-HQ dataset](https://github.com/NVlabs/ffhq-dataset), [K-Hairstyle dataset](https://psh01087.github.io/K-Hairstyle/), and an in-house crawled hair dataset. We do share the [crawling script](./misc/crawl.py) with the haircut keywords for the in-house dataset if the readers want to reproduce their own dataset. For head pose estimation, we use [WHENet](https://arxiv.org/abs/2005.10353).
+FFHQ-F(ullhead) consists of [Flickr-Faces-HQ dataset](https://github.com/NVlabs/ffhq-dataset), [K-Hairstyle dataset](https://psh01087.github.io/K-Hairstyle/), and an in-house human head dataset. For head pose estimation, we use [WHENet](https://arxiv.org/abs/2005.10353).
+
+Due to the license issue, we are not able to release FFHQ-F dataset that we used to train the model. [test_data_img](./dataset/testdata_img/) and [test_data_seg](./dataset/testdata_seg/) are just an example for showing the dataset struture. For the camera pose convention, please refer to [EG3D](https://github.com/NVlabs/eg3d). 
+
 
 ## Datasets format
 For training purpose, we can use either zip files or normal folder for image dataset and segmentation dataset. For PTI, we need to use folder.
