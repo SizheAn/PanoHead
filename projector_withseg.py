@@ -28,6 +28,7 @@ import legacy
 from camera_utils import LookAtPoseSampler
 
 def create_samples(N=256, voxel_origin=[0, 0, 0], cube_length=2.0):
+    """ create samples in a 3D grid with N points along each axis """
     # NOTE: the voxel_origin is actually the (bottom, left, down) corner, not the middle
     voxel_origin = np.array(voxel_origin) - cube_length/2
     voxel_size = cube_length / (N - 1)
@@ -69,6 +70,7 @@ def project(
     verbose                    = False,
     device: torch.device
 ):
+    """ Validate args """
     assert target.shape == (G.img_channels, G.img_resolution, G.img_resolution)
 
     def logprint(*args):
