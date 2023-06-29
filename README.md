@@ -106,6 +106,9 @@ For example:
 python dataset_tool_seg.py --img_source dataset/testdata_img --seg_source  dataset/testdata_seg --img_dest dataset/testdata_img.zip --seg_dest dataset/testdata_seg.zip --resolution 512x512
 ```
 
+## Obtaining camera pose and cropping the images
+Please follow the [guide](3DDFA_V2_cropping/cropping_guide.md)
+
 ## Obtaining segmentation masks
 You can try using deeplabv3 or other off-the-shelf tool to generate the masks. For example, using deeplabv3: [misc/segmentation_example.py](misc/segmentation_example.py)
 
