@@ -272,7 +272,7 @@ def project_pti(
 @click.option('--network', 'network_pkl', help='Network pickle filename', required=True)
 # @click.option('--target', 'target_fname',       help='Target image file to project to', required=True, metavar='FILE|DIR')
 @click.option('--target_img', 'target_img',       help='Target image folder', required=True, metavar='FILE|DIR')
-@click.option('--target_seg', 'target_seg',       help='Target segmentation folder', required=True, metavar='FILE|DIR')
+@click.option('--target_seg', 'target_seg',       help='Target segmentation folder', required=False, metavar='FILE|DIR')
 @click.option('--idx',                    help='index from dataset', type=int, default=0,  metavar='FILE|DIR')
 @click.option('--num-steps',              help='Number of optimization steps', type=int, default=500, show_default=True)
 @click.option('--num-steps-pti',          help='Number of optimization steps for pivot tuning', type=int, default=500, show_default=True)
@@ -316,8 +316,9 @@ def run_projection(
     G.rendering_kwargs["ray_start"] = 2.35
 
     if target_img is not None:
-        # dataset_kwargs = dnnlib.EasyDict(class_name='training.dataset.ImageFolderDataset', path=target_fname, use_labels=True, max_size=None, xflip=False)
-        dataset_kwargs = dnnlib.EasyDict(class_name='training.dataset.MaskLabeledDataset', img_path=target_img, seg_path=target_seg, use_labels=True, max_size=None, xflip=False)
+        # we actually do not need the seg in this step
+        dataset_kwargs = dnnlib.EasyDict(class_name='training.dataset.ImageFolderDataset', path=target_img, use_labels=True, max_size=None, xflip=False)
+        # dataset_kwargs = dnnlib.EasyDict(class_name='training.dataset.MaskLabeledDataset', img_path=target_img, seg_path=target_seg, use_labels=True, max_size=None, xflip=False)
         dataset = dnnlib.util.construct_class_by_name(**dataset_kwargs) # Subclass of training.dataset.Dataset.
         # target_fname = dataset._path + "/" + dataset._image_fnames[idx]
         target_fname = dataset._path + "/" + dataset._image_fnames[idx]

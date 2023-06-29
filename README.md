@@ -55,6 +55,7 @@ python gen_samples.py --outdir=out --trunc=0.7 --shapes=true --seeds=0-3 \
 # Generate full head reconstruction from a single RGB image.
 # Please refer to ./gen_pti_script.sh
 # For this application we need to specify dataset folder instead of zip files.
+# Segmentation files are not necessary for PTI inversion.
 
 ./gen_pti_script.sh
 ```
@@ -105,6 +106,8 @@ For example:
 python dataset_tool_seg.py --img_source dataset/testdata_img --seg_source  dataset/testdata_seg --img_dest dataset/testdata_img.zip --seg_dest dataset/testdata_seg.zip --resolution 512x512
 ```
 
+## Obtaining segmentation masks
+You can try using deeplabv3 or other off-the-shelf tool to generate the masks. For example, using deeplabv3: [misc/segmentation_example.py](misc/segmentation_example.py)
 
 
 
