@@ -1,12 +1,8 @@
-# Copyright (c) 2021, NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
-#
-# NVIDIA CORPORATION and its licensors retain all intellectual property
-# and proprietary rights in and to this software, related documentation
-# and any modifications thereto.  Any use, reproduction, disclosure or
-# distribution of this software and related documentation without an express
-# license agreement from NVIDIA CORPORATION is strictly prohibited.
-
-"""Tool for creating ZIP/PNG based datasets."""
+''' Tool for creating ZIP/PNG based datasets of image/mask pairs.
+Code adapted from following paper
+"Efficient Geometry-aware 3D Generative Adversarial Networks."
+See LICENSES/LICENSE_EG3D for original license.
+'''
 
 import functools
 import gzip
