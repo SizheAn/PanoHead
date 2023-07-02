@@ -39,14 +39,14 @@ Pre-trained networks are stored as `*.pkl` files that can be referenced using lo
 # Generate videos using pre-trained model
 
 python gen_videos.py --network models/easy-khair-180-gpc0.8-trans10-025000.pkl \
---seeds 0-3 --grid 2x2 --outdir=out --cfg Head --trunc 0.7
+--seeds 0-3 --grid 2x2 --output=out --cfg Head --trunc 0.7
 
 ```
 
 ```.bash
 # Generate images and shapes (as .mrc files) using pre-trained model
 
-python gen_samples.py --outdir=out --trunc=0.7 --shapes=true --seeds=0-3 \
+python gen_samples.py --output=out --trunc=0.7 --shapes=true --seeds=0-3 \
     --network models/easy-khair-180-gpc0.8-trans10-025000.pkl
 ```
 
@@ -65,7 +65,7 @@ python gen_samples.py --outdir=out --trunc=0.7 --shapes=true --seeds=0-3 \
 # Please refer to ./gen_interpolation.py for the implementation
 
 python gen_interpolation.py --network models/easy-khair-180-gpc0.8-trans10-025000.pkl\
-        --trunc 0.7 --outdir interpolation_out
+        --trunc 0.7 --output interpolation_out
 ```
 
 
@@ -123,14 +123,14 @@ Examples of training using `train.py`:
 # Train with StyleGAN2 backbone from scratch with raw neural rendering resolution=64, using 8 GPUs.
 # with segmentation mask, trigrid_depth@3, self-adaptive camera pose loss regularizer@10
 
-python train.py --outdir training-runs  --img_data dataset/testdata_img.zip --seg_data dataset/testdata_seg.zip --cfg=ffhq --batch=32 --gpus 8\\
+python train.py --output training-runs  --img_data dataset/testdata_img.zip --seg_data dataset/testdata_seg.zip --cfg=ffhq --batch=32 --gpus 8\\
 --gamma=1 --gamma_seg=1 --gen_pose_cond=True --mirror=1 --use_torgb_raw=1 --decoder_activation="none" --disc_module MaskDualDiscriminatorV2\\
 --bcg_reg_prob 0.2 --triplane_depth 3 --density_noise_fade_kimg 200 --density_reg 0 --min_yaw 0 --max_yaw 180 --back_repeat 4 --trans_reg 10 --gpc_reg_prob 0.7
 
 
 # Second stage finetuning to 128 neural rendering resolution (optional).
 
-python train.py --outdir results --img_data dataset/testdata_img.zip --seg_data dataset/testdata_seg.zip --cfg=ffhq --batch=32 --gpus 8\\
+python train.py --output results --img_data dataset/testdata_img.zip --seg_data dataset/testdata_seg.zip --cfg=ffhq --batch=32 --gpus 8\\
 --resume=~/training-runs/experiment_dir/network-snapshot-025000.pkl\\
 --gamma=1 --gamma_seg=1 --gen_pose_cond=True --mirror=1 --use_torgb_raw=1 --decoder_activation="none" --disc_module MaskDualDiscriminatorV2\\
 --bcg_reg_prob 0.2 --triplane_depth 3 --density_noise_fade_kimg 200 --density_reg 0 --min_yaw 0 --max_yaw 180 --back_repeat 4 --trans_reg 10 --gpc_reg_prob 0.7\\
