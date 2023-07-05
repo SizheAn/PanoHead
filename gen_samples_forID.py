@@ -27,7 +27,6 @@ from training.triplane import TriPlaneGenerator
 
 def parse_range(s: Union[str, List]) -> List[int]:
     '''Parse a comma separated list of numbers or ranges and return a list of ints.
-
     Example: '1,2,5-10' returns [1, 2, 5, 6, 7]
     '''
     if isinstance(s, list): return s
@@ -45,7 +44,6 @@ def parse_range(s: Union[str, List]) -> List[int]:
 
 def parse_vec2(s: Union[str, Tuple[float, float]]) -> Tuple[float, float]:
     '''Parse a floating point 2-vector of syntax 'a,b'.
-
     Example:
         '0,1' returns (0,1)
     '''
@@ -126,9 +124,7 @@ def generate_images(
     pose_cond: int,
 ):
     """Generate images using pretrained network pickle.
-
     Examples:
-
     \b
     # Generate an image using pre-trained FFHQ model.
     python gen_samples.py --outdir=output --trunc=0.7 --seeds=0-5 --shapes=True\\
@@ -136,7 +132,7 @@ def generate_images(
     """
 
     print('Loading networks from "%s"...' % network_pkl)
-    device = torch.device('cuda:7')
+    device = torch.device('cuda:0')
     with dnnlib.util.open_url(network_pkl) as f:
         G = legacy.load_network_pkl(f)['G_ema'].to(device) # type: ignore
 
@@ -243,5 +239,3 @@ def generate_images(
 
 if __name__ == "__main__":
     generate_images() # pylint: disable=no-value-for-parameter
-
-#----------------------------------------------------------------------------
