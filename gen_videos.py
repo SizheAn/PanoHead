@@ -323,7 +323,8 @@ def generate_images(
     """
 
     print('Loading networks from "%s"...' % network_pkl)
-    device = torch.device('cuda:1')
+    assert torch.cuda.is_available(), 'Cuda not available, can\'t load model'
+    device = torch.device('cuda')
     with dnnlib.util.open_url(network_pkl) as f:
         G = legacy.load_network_pkl(f)['G_ema'].to(device) # type: ignore
 
@@ -348,9 +349,9 @@ def generate_images(
         truncation_cutoff = 14 # no truncation so doesn't matter where we cutoff
 
     network_pkl = os.path.basename(network_pkl)
-    
-    output = os.path.splitext(network_pkl)[0] + '_' + str(pose_cond) + '.mp4'
+
     if interpolate:
+        output = os.path.join(output, os.path.splitext(network_pkl)[0] + '_' + str(pose_cond) + '.mp4')
         gen_interp_video(G=G, mp4=output, pose_cond = pose_cond, bitrate='100M', grid_dims=grid, num_keyframes=num_keyframes, w_frames=w_frames, seeds=seeds, shuffle_seed=shuffle_seed, psi=truncation_psi, truncation_cutoff=truncation_cutoff, cfg=cfg, image_mode=image_mode, gen_shapes=shapes, device=device)
     else:
         os.makedirs(output)
