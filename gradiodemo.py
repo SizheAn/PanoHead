@@ -59,7 +59,7 @@ def inference (img):
     run_cmd(f'gen_pti_script_with_mesh_noSeg.sh')
 
     #store .ply and post.mp4 separately under a new folder
-    if os.isdir('out') == False:
+    if os.path.isdir('out') == False:
         os.mkdir('out')
     os.mkdir(f'out/' + serialname)
     
