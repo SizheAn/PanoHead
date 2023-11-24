@@ -1,4 +1,12 @@
-""" Projecting input images into latent spaces. """
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+"""Project given image to the latent space of pretrained network pickle."""
 
 import copy
 import os
@@ -18,6 +26,8 @@ import dnnlib
 import legacy
 
 from camera_utils import LookAtPoseSampler
+
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 def create_samples(N=256, voxel_origin=[0, 0, 0], cube_length=2.0):
     # NOTE: the voxel_origin is actually the (bottom, left, down) corner, not the middle
