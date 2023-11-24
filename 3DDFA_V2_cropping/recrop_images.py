@@ -23,6 +23,8 @@ from utils.serialization import ser_to_ply, ser_to_obj
 from utils.functions import draw_landmarks, get_suffix
 from utils.tddfa_util import str2bool
 
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
 def eg3dcamparams(R_in):
     camera_dist = 2.7
     intrinsics = np.array([[4.2647, 0, 0.5], [0, 4.2647, 0.5], [0, 0, 1]])
@@ -288,6 +290,7 @@ def main(args):
         # Save cropped images
         cropped_img = crop_final(img_orig, size=size, quad=quad)
         os.makedirs(args.out_dir, exist_ok=True)
+        #cv2.imwrite(os.path.join(args.out_dir, os.path.basename(img_path)), cropped_img)
         cv2.imwrite(os.path.join(args.out_dir, os.path.basename(img_path).replace(".png",".jpg")), cropped_img)
 
     # Save quads
@@ -298,7 +301,7 @@ def main(args):
     # Save meta data
     results_new = []
     for img, P  in results_meta.items():
-        img = os.path.basename(img)
+        img = os.path.basename(img).replace(".png",".jpg")        
         res = [format(r, '.6f') for r in P]
         results_new.append((img,res))
     with open(os.path.join(args.out_dir, args.output_json), 'w') as outfile:
@@ -312,7 +315,7 @@ if __name__ == '__main__':
     parser.add_argument('-j', '--output_json', type=str, default='dataset.json')
     parser.add_argument('-p', '--prefix', type=str, default='')
     parser.add_argument('--size', type=int, default=1024)
-    parser.add_argument('--out_dir', type=str, default='./crop_samples/img')
+    parser.add_argument('--out_dir', type=str, default='./crop_samples')
     parser.add_argument('--mode', type=str, default='gpu', help='gpu or cpu mode')
     parser.add_argument('--config', type=str, default='configs/mb1_120x120.yml')
     parser.add_argument('--individual', action='store_true', default=False)
