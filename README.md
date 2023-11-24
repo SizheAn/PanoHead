@@ -68,6 +68,13 @@ python gen_interpolation.py --network models/easy-khair-180-gpc0.8-trans10-02500
         --trunc 0.7 --outdir interpolation_out
 ```
 
+## Gradio demo
+
+```.bash
+#path_3DDFA = "E:/3DDFA_V2-master/" at line 15 should be modified to fit your 3DDFA folder setup
+python gradiodemo.py
+
+```
 
 
 ## Using networks from Python
