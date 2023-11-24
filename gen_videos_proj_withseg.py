@@ -1,8 +1,14 @@
-''' Generate videos using pretrained network pickle.
-Code adapted from following paper
-"Efficient Geometry-aware 3D Generative Adversarial Networks."
-See LICENSES/LICENSE_EG3D for original license.
-'''
+# SPDX-FileCopyrightText: Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: LicenseRef-NvidiaProprietary
+#
+# NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
+# property and proprietary rights in and to this material, related
+# documentation and any modifications thereto. Any use, reproduction,
+# disclosure or distribution of this material and related documentation
+# without an express license agreement from NVIDIA CORPORATION or
+# its affiliates is strictly prohibited.
+
+"""Generate lerp videos using pretrained network pickle."""
 
 import os
 import re
@@ -16,12 +22,37 @@ import scipy.interpolate
 import torch
 from tqdm import tqdm
 import mrcfile
+from PIL import Image
 
 import legacy
 
 from camera_utils import LookAtPoseSampler
 from torch_utils import misc
+
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 #----------------------------------------------------------------------------
+
+def save_image(img, name, output_dir):
+    os.makedirs(output_dir, exist_ok=True)  # Create the output directory if it doesn't exist
+
+    image_path = os.path.join(output_dir, f"video_frame_{name}.png")  # Define the path and filename for the image
+
+    img = (img + 1) / 2  # Convert the image from [-1, 1] range to [0, 1] range
+    img = img.permute(1, 2, 0)  # Rearrange the dimensions of the image tensor
+    img = (img * 255).clamp(0, 255).byte()  # Scale the image values to [0, 255] and convert to byte tensor
+
+    if img.shape[-1] == 1:  # Grayscale image with single channel
+        img = img.squeeze(dim=1)  # Remove the single channel channel dimension
+        PIL_image = Image.fromarray(img.cpu().numpy(), mode='L')  # Convert to PIL image with 'L' mode (grayscale)
+    elif img.shape[-1] == 3:  # RGB image with three channels
+        PIL_image = Image.fromarray(img.cpu().numpy(), mode='RGB')  # Convert to PIL image with 'RGB' mode
+    else:
+        # For images with more than 3 channels, convert to RGBA format by adding an alpha channel
+        img = torch.cat((img, torch.full_like(img[..., :1], 255, dtype=torch.uint8)), dim=-1)
+        PIL_image = Image.fromarray(img.cpu().numpy(), mode='RGBA')  # Convert to PIL image with 'RGBA' mode
+
+    PIL_image.save(image_path)  # Save the PIL image to disk
+
 
 def layout_grid(img, grid_w=None, grid_h=1, float_to_uint8=True, chw_to_hwc=True, to_numpy=True):
     batch_size, channels, img_h, img_w = img.shape
@@ -65,7 +96,7 @@ def create_samples(N=256, voxel_origin=[0, 0, 0], cube_length=2.0):
 
 #----------------------------------------------------------------------------
 
-def gen_interp_video(G, mp4: str, ws, w_frames=60*4, kind='cubic', grid_dims=(1,1), num_keyframes=None, wraps=2, psi=1, truncation_cutoff=14, cfg='FFHQ', image_mode='image', gen_shapes=False, device=torch.device('cuda'), **video_kwargs):
+def gen_interp_video(G, mp4: str, ws, w_frames=60*4, kind='cubic', grid_dims=(1,1), num_keyframes=None, wraps=2, psi=1, truncation_cutoff=14, cfg='FFHQ', image_mode='image', gen_shapes=False, gen_frames=False, iso_level=10.0, device=torch.device('cuda'), **video_kwargs):
     grid_w = grid_dims[0]
     grid_h = grid_dims[1]
 
@@ -148,6 +179,9 @@ def gen_interp_video(G, mp4: str, ws, w_frames=60*4, kind='cubic', grid_dims=(1,
 
                 imgs.append(img)
 
+                if gen_frames:
+                    save_image(img, frame_idx, mp4.replace('.mp4', '/'))
+
                 if gen_shapes and frame_idx == 0:
                     # generate shapes
                     print('Generating shape for frame %d / %d ...' % (frame_idx, num_keyframes * w_frames))
@@ -165,6 +199,12 @@ def gen_interp_video(G, mp4: str, ws, w_frames=60*4, kind='cubic', grid_dims=(1,
                                 torch.manual_seed(0)
                                 sigma = G.sample_mixed(samples[:, head:head+max_batch], transformed_ray_directions_expanded[:, :samples.shape[1]-head], w.unsqueeze(0), truncation_psi=psi, noise_mode='const')['sigma']
                                 sigmas[:, head:head+max_batch] = sigma
+                                '''
+                                sample_result = G.sample_mixed(samples[:, head:head+max_batch], transformed_ray_directions_expanded[:, :samples.shape[1]-head], w.unsqueeze(0), truncation_psi=psi, noise_mode='const')
+                                sigmas[:, head:head+max_batch] = sample_result['sigma']
+                                color_batch = G.torgb(sample_result['rgb'].transpose(1,2)[...,None], ws[0,0,0,:1])
+                                colors[:, head:head+max_batch] = np.transpose(color_batch[...,0], (2, 1, 0))
+                                '''
                                 head += max_batch
                                 pbar.update(max_batch)
 
@@ -180,10 +220,10 @@ def gen_interp_video(G, mp4: str, ws, w_frames=60*4, kind='cubic', grid_dims=(1,
                     sigmas[:, :, :pad] = 0
                     sigmas[:, :, -pad:] = 0
 
-                    output_ply = False
+                    output_ply = True
                     if output_ply:
                         from shape_utils import convert_sdf_samples_to_ply
-                        convert_sdf_samples_to_ply(np.transpose(sigmas, (2, 1, 0)), [0, 0, 0], 1, os.path.join(outdirs, mp4.replace('.mp4', '.ply')), level=10)
+                        convert_sdf_samples_to_ply(np.transpose(sigmas, (2, 1, 0)), [0, 0, 0], 1, mp4.replace('.mp4', '.ply'), level=iso_level)
                     else: # output mrc
                         with mrcfile.new_mmap(mp4.replace('.mp4', '.mrc'), overwrite=True, shape=sigmas.shape, mrc_mode=2) as mrc:
                             mrc.data[:] = sigmas
@@ -247,6 +287,8 @@ def parse_tuple(s: Union[str, Tuple[int,int]]) -> Tuple[int, int]:
 @click.option('--sample_mult', 'sampling_multiplier', type=float, help='Multiplier for depth sampling in volume rendering', default=1, show_default=True)
 @click.option('--nrr', type=int, help='Neural rendering resolution override', default=None, show_default=True)
 @click.option('--shapes', type=bool, help='Gen shapes for shape interpolation', default=False, show_default=True)
+@click.option('--level', type=float, help='Iso surface level for mesh generation', default=10, show_default=True)
+@click.option('--frames', type=bool, help='Save frames as images', default=False, show_default=True)
 @click.option('--interpolate', type=bool, help='Interpolate between seeds', default=True, show_default=True)
 
 def generate_images(
@@ -264,6 +306,8 @@ def generate_images(
     sampling_multiplier: float,
     nrr: Optional[int],
     shapes: bool,
+    level: float,
+    frames: bool,
     interpolate: bool,
 ):
     """Render a latent vector interpolation video.
@@ -271,7 +315,7 @@ def generate_images(
     """
 
     print('Loading networks from "%s"...' % network_pkl)
-    device = torch.device('cuda:1')
+    device = torch.device('cuda')
     with dnnlib.util.open_url(network_pkl) as f:
         G = legacy.load_network_pkl(f)['G_ema'].to(device) # type: ignore
 
@@ -287,7 +331,7 @@ def generate_images(
         truncation_cutoff = 14 # no truncation so doesn't matter where we cutoff
 
     ws = torch.tensor(np.load(latent)['w']).to(device)
-    gen_interp_video(G=G, mp4=output, ws=ws, bitrate='100M', grid_dims=grid, num_keyframes=num_keyframes, w_frames=w_frames, psi=truncation_psi, truncation_cutoff=truncation_cutoff, cfg=cfg, image_mode=image_mode, gen_shapes=shapes, device=device)
+    gen_interp_video(G=G, mp4=output, ws=ws, bitrate='100M', grid_dims=grid, num_keyframes=num_keyframes, w_frames=w_frames, psi=truncation_psi, truncation_cutoff=truncation_cutoff, cfg=cfg, image_mode=image_mode, gen_shapes=shapes, iso_level=level, gen_frames=frames, device=device)
 
 #----------------------------------------------------------------------------
 
